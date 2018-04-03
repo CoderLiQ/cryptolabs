@@ -1,0 +1,398 @@
+Configuration Tasks When Installing from the Database
+Oracle Application Express is installed by default with Oracle Database 11g Release 1 (11.1) and later. This chapter describes required postinstallation configuration tasks for Oracle Application Express when installed with Oracle Database 12c or later in the standalone and multitenant architecture.
+
+The instructions in this chapter apply to both new and upgrade installations. To learn more, see "Upgrading from a Previous Release of Oracle Application Express".
+
+Note:
+
+This chapter applies to installations in Oracle Database 12c in the multitenant architecture and non-CDB (or standalone) architecture. For more information on multitenant architecture, see "Part VI" in Oracle Database Concepts 12c Release 1 (12.1). For more information on different installation scenarios relating to Application Express in an Oracle Database 12c Release 1 (12.1) multitenant architecture, see Chapter 3, "Utilizing the Multitenant Architecture".
+About Patching Oracle Application Express
+
+Recommended Pre-installation Tasks
+
+Choosing a Web Listener
+
+Installing from the Database and Configuring Oracle REST Data Services
+
+Installing from the Database and Configuring the Embedded PL/SQL Gateway
+
+Installing from the Database and Configuring the Oracle HTTP Server
+
+Post Installation Tasks for Upgrade Installations
+
+About the Oracle Application Express Runtime Environment
+
+4.1 About Patching Oracle Application Express
+If you are already running Oracle Application Express, then check the Oracle Application Express page on the Oracle Technology Network (OTN) at the following URL for information about patch set releases or later releases of Oracle Application Express:
+
+http://www.oracle.com/technology/products/database/application_express/index.html
+
+Upgrading to Oracle Database 12c Release 1 (12.1) will not patch Oracle Application Express. To learn more about downloading and installing Oracle Application Express from Oracle Technology Network (OTN) see "Downloading from Oracle Technology Network" in Oracle Application Express Installation Guide for Oracle Application Express release 4.2.
+
+4.2 Recommended Pre-installation Tasks
+Before installing Oracle Application Express, Oracle recommends that you complete the following steps:
+
+Review and satisfy all Oracle Application Express installation requirements. See "Oracle Application Express Installation Requirements".
+
+Shut down any existing Oracle Database instances as well as Oracle-related processes.
+
+Shut down any existing Oracle Database instances with normal or immediate priority, except for the database where you plan to install the Oracle Application Express schemas. On Oracle Real Application Clusters (Oracle RAC) systems, shut down all instances on each node.
+
+If Oracle Automatic Storage Management (ASM) is running, shut down all databases that use ASM except for the database where you will install Oracle Application Express, and then shut down the ASM instance.
+
+You can use the Windows Services utility, located either in the Windows Control Panel or from the Administrative Tools menu (under Start and then Programs), to shut down Oracle Database and ASM instances. Names of Oracle Databases are preceded with OracleService. The Oracle ASM service is named OracleASMService+ASM. In addition, shut down the OracleCSService service, which ASM uses. Right-click the name of the service and from the menu, choose Stop.
+
+Back up the Oracle Database installation.
+
+Oracle recommends that you create a backup of the current installation of Oracle Database installation before you install Oracle Application Express. You can use Oracle Database Recovery Manager, which is included the Oracle Database installation, to perform the backup.
+
+See Also:
+
+Oracle Database Backup and Recovery User's Guide
+Start the Oracle Database instance that contains the target database.
+
+After backing up the system, you must start the Oracle instance that contains the target Oracle Database. Do not start other processes such as a Web listener. However, if you are performing a remote installation, make sure the Web listener for the remote database has started.
+
+Note:
+
+If you are connecting to a remote database, then start the Web listener.
+4.3 Choosing a Web Listener
+In order to run, Oracle Application Express must have access to Oracle REST Data Services, Oracle HTTP Server and mod_plsql, or the embedded PL/SQL gateway. To learn more, see "About Choosing a Web Listener".
+
+4.4 Installing from the Database and Configuring Oracle REST Data Services
+This section describes required postinstallation configuration tasks when running Oracle Application Express with Oracle REST Data Services.
+
+Install the Oracle Database and Complete Preinstallation Tasks
+
+Download and Install Oracle REST Data Services
+
+Configure RESTful Services
+
+Enable Network Services in Oracle Database 12c
+
+Security Considerations
+
+About Running Oracle Application Express in Other Languages
+
+About Managing JOB_QUEUE_PROCESSES
+
+Create a Workspace and Add Oracle Application Express Users
+
+4.4.1 Install the Oracle Database and Complete Preinstallation Tasks
+Oracle Application Express automatically installs with Oracle Database 11g and later. To learn more about installing the Oracle Database, see the Oracle Database Installation Guide for your platform and "Recommended Pre-installation Tasks".
+
+4.4.2 Download and Install Oracle REST Data Services
+To download Oracle REST Data Services:
+
+Download the latest release of Oracle REST Data Services from the following site:
+
+http://www.oracle.com/technetwork/developer-tools/rest-data-services/downloads/index.html
+Note that the version.number in the file name reflects the current release number.
+
+Unzip the downloaded zip file into a directory (or folder) of your choice:
+
+UNIX and Linux: unzip ords.version.number.zip
+
+Windows: Double-click the file ords.version.number.zip in Windows Explorer
+
+Copy the images directory, apex/images, from the Application Express software ZIP to a location on the file system where Oracle REST Data Services is installed.
+
+Locate the installation guide for Oracle REST Data Services and follow instructions to complete installation and configuration steps.
+
+For Oracle Database 12c multitenant architecture, ensure that you configure the connection using the service name of the specific pluggable database (PDB) you want to access. Do not use the service name of the CDB$ROOT unless you are configuring Oracle REST Data Services to address PDBs through the URL. See Oracle REST Data Services Installation and Developer Guide for more information.
+
+4.4.3 Configure RESTful Services
+In a new installation of Oracle Application Express, you configure RESTful Services by running the configuration script apex_rest_config.sql. This step is optional and only needs to be completed if you wish to use RESTful Services with Oracle REST Data Services on the instance. Once configured, the instance administrator can control the availability of the feature. If the instance administrator has disabled RESTful Services for this Application Express instance, RESTful Services are not available for this instance and the RESTful Services icon does not display. See "Configuring SQL Workshop" in Oracle Application Express Administration Guide.
+
+Note:
+
+RESTful Services requires Oracle REST Data Services release 2.0 or later.
+To configure RESTful Services in Oracle Application Express:
+
+Change your working directory to $ORACLE_HOME/apex.
+
+Start SQL*Plus and connect to the database where Oracle Application Express is installed as SYS specifying the SYSDBA role. For example:
+
+On Windows:
+
+SYSTEM_DRIVE:\ sqlplus /nolog
+SQL> CONNECT SYS as SYSDBA
+Enter password: SYS_password
+On UNIX and Linux:
+
+$ sqlplus /nolog
+SQL> CONNECT SYS as SYSDBA
+Enter password: SYS_password
+If running in the Oracle Database 12c multitenant architecture, set the container to the pluggable database (PDB) to be configured:
+
+ALTER SESSION SET CONTAINER = <PDB_name>;
+Run apex_rest_config.sql. For example:
+
+@apex_rest_config.sql
+When Prompted, enter a password for the APEX_LISTENER and APEX_REST_PUBLIC_USER accounts. When configuring RESTful Services in Oracle Application Express, it creates two new database accounts.
+
+APEX_LISTENER - The account used to query RESTful Services definitions stored in Oracle Application Express.
+
+APEX_REST_PUBLIC_USER - The account used when calling RESTful Services definitions stored in Oracle Application Express.
+
+4.4.4 Enable Network Services in Oracle Database 12c
+By default, the ability to interact with network services is disabled in Oracle Database 12c. Therefore, if you are running Oracle Application Express with Oracle Database 12c, you must use the new DBMS_NETWORK_ACL_ADMIN package to grant connect privileges to any host for the APEX_040200 database user. Failing to grant these privileges results in issues with:
+
+Sending outbound mail in Oracle Application Express.
+
+Users can call methods from the APEX_MAIL package, but issues arise when sending outbound email.
+
+Using Web services in Oracle Application Express.
+
+PDF report printing.
+
+Granting Connect Privileges
+
+Troubleshooting an Invalid ACL Error
+
+Tip:
+
+To run the examples described in this section, the compatible initialization parameter of the database must be set to at least 11.1.0.0.0. By default an Oracle Database 12c already has the parameter set properly, but a database upgraded to Oracle Database 12c from a prior version may not. See "Creating and Configuring an Oracle Database" in Oracle Database Administrator's Guide for information about changing database initialization parameters.
+The examples below should be modified according to your environment and in a Oracle Database 12c multitenant architecture, should be run on each pluggable database (PDB).
+
+4.4.4.1 Granting Connect Privileges
+The following example demonstrates how to grant connect privileges to any host for the APEX_040200 database user. This example assumes you connected to the database where Oracle Application Express is installed as SYS specifying the SYSDBA role.
+
+DECLARE
+  ACL_PATH  VARCHAR2(4000);
+BEGIN
+  -- Look for the ACL currently assigned to '*' and give APEX_040200
+  -- the "connect" privilege if APEX_040200 does not have the privilege yet.
+ 
+  SELECT ACL INTO ACL_PATH FROM DBA_NETWORK_ACLS
+   WHERE HOST = '*' AND LOWER_PORT IS NULL AND UPPER_PORT IS NULL;
+ 
+  IF DBMS_NETWORK_ACL_ADMIN.CHECK_PRIVILEGE(ACL_PATH, 'APEX_040200',
+     'connect') IS NULL THEN
+      DBMS_NETWORK_ACL_ADMIN.ADD_PRIVILEGE(ACL_PATH,
+     'APEX_040200', TRUE, 'connect');
+  END IF;
+ 
+EXCEPTION
+  -- When no ACL has been assigned to '*'.
+  WHEN NO_DATA_FOUND THEN
+  DBMS_NETWORK_ACL_ADMIN.CREATE_ACL('power_users.xml',
+    'ACL that lets power users to connect to everywhere',
+    'APEX_040200', TRUE, 'connect');
+  DBMS_NETWORK_ACL_ADMIN.ASSIGN_ACL('power_users.xml','*');
+END;
+/
+COMMIT;
+The following example demonstrates how to provide less privileged access to local network resources. This example is used to enable access to servers on the local host only, such as email and report servers.
+
+DECLARE
+  ACL_PATH  VARCHAR2(4000);
+BEGIN
+  -- Look for the ACL currently assigned to 'localhost' and give APEX_040200
+  -- the "connect" privilege if APEX_040200 does not have the privilege yet.
+  SELECT ACL INTO ACL_PATH FROM DBA_NETWORK_ACLS
+   WHERE HOST = 'localhost' AND LOWER_PORT IS NULL AND UPPER_PORT IS NULL;
+   
+  IF DBMS_NETWORK_ACL_ADMIN.CHECK_PRIVILEGE(ACL_PATH, 'APEX_040200',
+     'connect') IS NULL THEN
+      DBMS_NETWORK_ACL_ADMIN.ADD_PRIVILEGE(ACL_PATH,
+     'APEX_040200', TRUE, 'connect');
+  END IF;
+  
+EXCEPTION
+  -- When no ACL has been assigned to 'localhost'.
+  WHEN NO_DATA_FOUND THEN
+  DBMS_NETWORK_ACL_ADMIN.CREATE_ACL('local-access-users.xml',
+    'ACL that lets users to connect to localhost',
+    'APEX_040200', TRUE, 'connect');
+  DBMS_NETWORK_ACL_ADMIN.ASSIGN_ACL('local-access-users.xml','localhost');
+END;
+/
+COMMIT;
+4.4.4.2 Troubleshooting an Invalid ACL Error
+If you receive an ORA-44416: Invalid ACL error after running the previous script, use the following query to identify the invalid ACL:
+
+REM Show the dangling references to dropped users in the ACL that is assigned
+REM to '*'.
+
+SELECT ACL, PRINCIPAL
+  FROM DBA_NETWORK_ACLS NACL, XDS_ACE ACE
+ WHERE HOST = '*' AND LOWER_PORT IS NULL AND UPPER_PORT IS NULL AND
+       NACL.ACLID = ACE.ACLID AND
+       NOT EXISTS (SELECT NULL FROM ALL_USERS WHERE USERNAME = PRINCIPAL);
+Next, run the following code to fix the ACL:
+
+DECLARE
+  ACL_ID   RAW(16);
+  CNT      NUMBER;
+BEGIN
+  -- Look for the object ID of the ACL currently assigned to '*'
+  SELECT ACLID INTO ACL_ID FROM DBA_NETWORK_ACLS
+   WHERE HOST = '*' AND LOWER_PORT IS NULL AND UPPER_PORT IS NULL;
+
+  -- If just some users referenced in the ACL are invalid, remove just those
+  -- users in the ACL. Otherwise, drop the ACL completely.
+  SELECT COUNT(PRINCIPAL) INTO CNT FROM XDS_ACE
+   WHERE ACLID = ACL_ID AND
+         EXISTS (SELECT NULL FROM ALL_USERS WHERE USERNAME = PRINCIPAL);
+
+  IF (CNT > 0) THEN
+
+    FOR R IN (SELECT PRINCIPAL FROM XDS_ACE
+               WHERE ACLID = ACL_ID AND
+                     NOT EXISTS (SELECT NULL FROM ALL_USERS
+                                  WHERE USERNAME = PRINCIPAL)) LOOP
+      UPDATE XDB.XDB$ACL
+         SET OBJECT_VALUE =
+               DELETEXML(OBJECT_VALUE,
+                         '/ACL/ACE[PRINCIPAL="'||R.PRINCIPAL||'"]')
+       WHERE OBJECT_ID = ACL_ID;
+    END LOOP;
+
+  ELSE
+    DELETE FROM XDB.XDB$ACL WHERE OBJECT_ID = ACL_ID;
+  END IF;
+
+END;
+/
+
+REM commit the changes.
+
+COMMIT;
+Once the ACL has been fixed, you must run the first script in this section to apply the ACL to the APEX_040200 user. See "Granting Connect Privileges".
+
+4.4.5 Security Considerations
+Oracle highly recommends you configure and use a Secure Sockets Layer (SSL) to ensure that passwords and other sensitive data are not transmitted in clear text in HTTP requests. Without the use of SSL, passwords could potentially be exposed, compromising security. SSL is an industry standard protocol that uses RSA public key cryptography in conjunction with symmetric key cryptography to provide authentication, encryption, and data integrity.
+
+See Also:
+
+"Requiring HTTPS" in Oracle Application Express Administration Guide
+4.4.6 About Running Oracle Application Express in Other Languages
+The Oracle Application Express interface is translated into German, Spanish, French, Italian, Japanese, Korean, Brazilian Portuguese, Simplified Chinese, and Traditional Chinese. A single instance of Oracle Application Express can be installed with one or more of these translated versions. At runtime, each user's Web browser language settings determine the specific language version.
+
+The translated version of Oracle Application Express should be loaded into a database that has a character set that supports the specific language. If you attempt to install a translated version of Oracle Application Express into a database that does not support the character encoding of the language, the installation may fail or the translated Oracle Application Express instance may appear corrupt when run. The database character set AL32UTF8 supports all the translated versions of Oracle Application Express.
+
+You can manually install translated versions of Oracle Application Express using SQL*Plus. The installation files are encoded in AL32UTF8.
+
+Note:
+
+Regardless of the target database character set, to install a translated version of Oracle Application Express, you must set the character set value of the NLS_LANG environment variable to AL32UTF8 before starting SQL*Plus.
+The following examples illustrate valid NLS_LANG settings for loading Oracle Application Express translations:
+
+American_America.AL32UTF8
+Japanese_Japan.AL32UTF8 
+In a multitenant architecture, the scripts below should be run in each pluggable database (PDB).
+
+4.4.6.1 Installing a Translated Version of Oracle Application Express
+Whether you are installing for the first time or upgrading from a previous release, you must run the load_lang.sql script to run a translated version of Oracle Application Express.
+
+The installation scripts are located in subdirectories identified by a language code in the $ORACLE_HOME/apex/builder. For example, the German version is located in apex/builder/de and the Japanese version is located in apex/builder/ja. Within each directory, there is a language loading script identified by the language code (for example, load_de.sql or load_ja.sql).
+
+To install a translated version of Oracle Application Express:
+
+Set the NLS_LANG environment variable, making sure that the character set is AL32UTF8. For example:
+
+Bourne or Korn shell:
+
+NLS_LANG=American_America.AL32UTF8
+export NLS_LANG
+C shell:
+
+setenv NLS_LANG American_America.AL32UTF8
+For Windows based systems:
+
+set NLS_LANG=American_America.AL32UTF8
+Start SQL*Plus and connect to the database where Oracle Application Express is installed as SYS specifying the SYSDBA role. For example:
+
+On Windows:
+
+SYSTEM_DRIVE:\ sqlplus /nolog
+SQL> CONNECT SYS as SYSDBA
+Enter password: SYS_password
+On UNIX and Linux:
+
+$ sqlplus /nolog
+SQL> CONNECT SYS as SYSDBA
+Enter password: SYS_password
+If running in the Oracle Database 12c multitenant architecture, set the container to the PDB to be configured:
+
+ALTER SESSION SET CONTAINER = <PDB_name>;
+Execute the following statement:
+
+ALTER SESSION SET CURRENT_SCHEMA = APEX_040200;
+Execute the appropriate language specific script. For example:
+
+@load_lang.sql
+Where lang is the specific language (for example, load_de.sql for German or load_ja.sql for Japanese).
+
+4.4.7 About Managing JOB_QUEUE_PROCESSES
+JOB_QUEUE_PROCESSES determine the maximum number of concurrently running jobs. In Oracle Application Express release 4.2, transactional support and SQL scripts require jobs. If JOB_QUEUE_PROCESSES is not enabled and working properly, you cannot successfully execute a script.
+
+Viewing the Number of JOB_QUEUE_PROCESSES
+
+Changing the Number of JOB_QUEUE_PROCESSES
+
+4.4.7.1 Viewing the Number of JOB_QUEUE_PROCESSES
+There are currently three ways to view the number of JOB_QUEUE_PROCESSES:
+
+In the installation log file
+
+On the About Application Express page in Oracle Application Express
+
+From SQL*Plus
+
+4.4.7.1.1 Viewing JOB_QUEUE_PROCESSES in the Installation Log File
+After installing or upgrading Oracle Application Express to release 4.2, you can view the number of JOB_QUEUE_PROCESSES in the installation log files. See "Reviewing a Log of an Installation Session".
+
+4.4.7.1.2 Viewing JOB_QUEUE_PROCESSES in Oracle Application Express
+You can also view the number of JOB_QUEUE_PROCESSES on the About Application Express page.
+
+To view the About Application Express page:
+
+Log in to Oracle Application Express. See "Logging in to Your Oracle Application Express Workspace".
+
+On the Administration list, click About Application Express.
+
+The current number JOB_QUEUE_PROCESSES displays at the bottom of the page.
+
+4.4.7.1.3 Viewing JOB_QUEUE_PROCESSES from SQL*Plus
+You can also view the number of JOB_QUEUE_PROCESSES from SQL*Plus by running the following SQL statement:
+
+SELECT VALUE FROM v$parameter WHERE NAME = 'job_queue_processes'
+4.4.7.2 Changing the Number of JOB_QUEUE_PROCESSES
+You can change the number of JOB_QUEUE_PROCESSES by running a SQL statement in SQL*Plus:
+
+To update the number of JOB_QUEUE_PROCESSES:
+
+Start SQL*Plus and connect to the database where Oracle Application Express is installed as SYS specifying the SYSDBA role:
+
+On Windows:
+
+SYSTEM_DRIVE:\ sqlplus /nolog
+SQL> CONNECT SYS as SYSDBA
+Enter password: SYS_password
+On UNIX and Linux:
+
+$ sqlplus /nolog
+SQL> CONNECT SYS as SYSDBA
+Enter password: SYS_password
+In SQL*Plus run the following SQL statement:
+
+ALTER SYSTEM SET JOB_QUEUE_PROCESSES = <number>
+For example, running the statement ALTER SYSTEM SET JOB_QUEUE_PROCESSES = 20 sets JOB_QUEUE_PROCESSES to 20.
+
+4.4.8 Create a Workspace and Add Oracle Application Express Users
+You access the Oracle Application Express home page by logging in to workspace using a Web browser. Your Web browser must support JavaScript and the HTML 4.0 and CSS 1.0 standards. See "Browser Requirements".
+
+A workspace is a virtual private database allowing multiple users to work within the same Oracle Application Express installation while keeping their objects, data and applications private. Each workspace has a unique ID and name.
+
+An Oracle Application Express administrator can create a workspace manually within Oracle Application Express Administration Services or have users submit requests. Oracle Application Express Administration Services is a separate application for managing an entire Oracle Application Express instance. See "Creating Workspaces" and "Managing Workspace Change Requests" in Oracle Application Express Administration Guide.
+
+See Also:
+
+Oracle Database 2 Day + Oracle Application Express Developer's Guide if you are new to Oracle Application Express
+Creating a Workspace Manually
+
+Creating Oracle Application Express Users
+
+Logging in to Your Oracle Application Express Workspace

@@ -46,6 +46,7 @@ aliceSecret = 13  # a
 bobSecret = 37  # b
 ```
 
+## 2. Тестирование
 
 ```python
 # Alice Sends Bob A = g^a mod p
